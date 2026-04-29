@@ -7,7 +7,7 @@
     android:background="#E3F2FD"
     android:padding="16dp">
 
-    <!-- ===== ВЕРХНЯЯ СТРОКА: иконка, название приложения и кнопки ===== -->
+    <!-- ===== ВЕРХНЯЯ СТРОКА ===== -->
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="0dp"
@@ -17,7 +17,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Иконка облака с солнцем + "Текущая погода" -->
+        <!-- Иконка облака с солнцем (заменена на эмодзи) -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -25,6 +25,7 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
+            <!-- Эмодзи погоды -->
             <ImageView
                 android:id="@+id/weatherIcon"
                 android:layout_width="28dp"
@@ -63,7 +64,7 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- ===== Город ===== -->
+    <!-- ===== ГОРОД (будет заменён на выбранный) ===== -->
     <TextView
         android:id="@+id/cityName"
         android:layout_width="wrap_content"
@@ -159,6 +160,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <!-- Заголовок "Прогноз на 5 дней" и "Показать полностью" -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -185,6 +187,7 @@
                     android:background="?attr/selectableItemBackground" />
             </LinearLayout>
 
+            <!-- Три колонки: Вчера, Сегодня, Завтра -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -211,7 +214,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="-5°/-10°"
+                        android:text="--° / --°"
                         android:textColor="#1F1F1F"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -237,7 +240,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="-10°/-1°"
+                        android:text="--° / --°"
                         android:textColor="#1F1F1F"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -263,7 +266,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="-10°/-3°"
+                        android:text="--° / --°"
                         android:textColor="#1F1F1F"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -272,7 +275,7 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- ===== ВЛАЖНОСТЬ И ДАВЛЕНИЕ ===== -->
+    <!-- ===== ДВЕ ОТДЕЛЬНЫЕ ПАНЕЛИ: ВЛАЖНОСТЬ И ДАВЛЕНИЕ ===== -->
     <LinearLayout
         android:id="@+id/humidityPressureRow"
         android:layout_width="0dp"
@@ -283,6 +286,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/forecastPanel">
 
+        <!-- Панель Влажность -->
         <androidx.cardview.widget.CardView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -317,6 +321,7 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- Панель Давление -->
         <androidx.cardview.widget.CardView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -335,7 +340,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Давление"
+                    android:text="Ветер"
                     android:textColor="#555555"
                     android:textSize="16sp" />
 
@@ -352,7 +357,7 @@
         </androidx.cardview.widget.CardView>
     </LinearLayout>
 
-    <!-- ===== КАЧЕСТВО ВОЗДУХА ===== -->
+    <!-- ===== ПАНЕЛЬ КАЧЕСТВО ВОЗДУХА (ИКВ) ===== -->
     <androidx.cardview.widget.CardView
         android:id="@+id/airQualityPanel"
         android:layout_width="0dp"
@@ -374,7 +379,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Качество воздуха (ИКВ)"
+                android:text="УФ-индекс"
                 android:textColor="#555555"
                 android:textSize="16sp" />
 
@@ -396,7 +401,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Данные предоставлены Яндекс.Погода"
+        android:text="Данные предоставлены AccuWeather"
         android:textColor="#999999"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"

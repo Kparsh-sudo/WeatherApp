@@ -6,7 +6,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object WeatherApiClient {
-    private const val BASE_URL = "https://api.weather.yandex.ru/"
+    private const val BASE_URL = "https://dataservice.accuweather.com/"  // ← адрес AccuWeather
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
