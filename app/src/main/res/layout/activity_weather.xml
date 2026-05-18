@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?android:attr/windowBackground">  <!-- или ?attr/colorSurface -->
+
+    <!-- Шапка -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorSurface"
+        app:title="Москва"
+        app:titleTextColor="?attr/colorOnSurface" />
+
+    <!-- RecyclerView для графика -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/forecastGraphRecycler"
+        android:layout_width="match_parent"
+        android:layout_height="350dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:scrollbars="horizontal"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        android:orientation="horizontal" />
+
+    <!-- Остальной контент -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="Остальная информация о погоде"
+        android:textSize="16sp"
+        android:alpha="0.6" />
+
+</LinearLayout>

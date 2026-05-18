@@ -13,6 +13,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 class WeatherViewModel(application: Application) : AndroidViewModel(application) {
@@ -20,7 +22,10 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
     private val _uiState = MutableLiveData(WeatherUiState())
     val uiState: LiveData<WeatherUiState> = _uiState
 
-    private val apiKey = "366ee947-5168-40ac-ab54-cef3a82e2ade" // ваш ключ Яндекс.Погоды
+    private val _graphItems = MutableLiveData<List<ForecastGraphItem>>()
+    val graphItems: LiveData<List<ForecastGraphItem>> = _graphItems
+
+    private val apiKey = "КЛЮЧ АПИ"
     private val apiService = WeatherApiClient.apiService
 
     private val defaultLat = 51.3737
@@ -29,42 +34,84 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
     private val cityStorage = CityStorage(application)
 
     fun loadWeatherData(lat: Double = defaultLat, lon: Double = defaultLon) {
-        Log.d("WeatherVM", "loadWeatherData called with lat=$lat, lon=$lon")
         viewModelScope.launch {
             _uiState.value = _uiState.value?.copy(isLoading = true, errorMessage = null)
             try {
-                val response = apiService.getWeather(
-                    apiKey = apiKey,
+                val coordString = "$lat,$lon"
+                val locationResponse = apiService.getLocationKey(apiKey, coordString)
+                val locationKey = locationResponse.key
+                val cityName = locationResponse.localizedName
+
+                val forecastResponse = apiService.get5DayForecast(locationKey, apiKey)
+                val dailyList = forecastResponse.DailyForecasts
+
+                val today = dailyList.getOrNull(0)
+                val tomorrow = dailyList.getOrNull(1)
+
+                val todayMax = today?.Temperature?.Maximum?.Value?.toInt() ?: 0
+                val todayMin = today?.Temperature?.Minimum?.Value?.toInt() ?: 0
+                val tomorrowMax = tomorrow?.Temperature?.Maximum?.Value?.toInt() ?: 0
+                val tomorrowMin = tomorrow?.Temperature?.Minimum?.Value?.toInt() ?: 0
+
+                val weatherDesc = today?.Day?.iconPhrase ?: ""
+                val iconCode = today?.Day?.icon ?: 1
+
+                val humidityAvg = today?.Day?.relativeHumidity?.Average
+                val humidityStr = if (humidityAvg != null) "$humidityAvg%" else "--%"
+
+                val windObj = today?.Day?.wind
+                val windStr = if (windObj != null && windObj.speed.value > 0) {
+                    "${windObj.speed.value.toInt()} км/ч, ${windObj.direction.localized}"
+                } else "-- км/ч"
+
+                val uvItem = today?.airAndPollen?.find { it.name == "UVIndex" }
+                val uvStr = if (uvItem != null && uvItem.value > 0) {
+                    "${uvItem.value.toInt()}, ${uvItem.category}"
+                } else "--"
+
+                val emoji = getEmojiForIcon(iconCode)
+
+                // Сохраняем город
+                cityStorage.addCityAndSetCurrent(SavedCity(cityName, lat, lon, isCurrent = true))
+
+                val newState = WeatherUiState(
+                    cityName = cityName,
+                    currentTemp = "${(todayMax + todayMin) / 2}°",
+                    weatherDesc = weatherDesc,
+                    todayMinMax = "${todayMax}° / ${todayMin}°",
+                    yesterdayTemp = "--° / --°",
+                    tomorrowTemp = "${tomorrowMax}° / ${tomorrowMin}°",
+                    humidity = humidityStr,
+                    wind = windStr,
+                    uvIndex = uvStr,
+                    iconEmoji = emoji,
+                    isLoading = false,
                     lat = lat,
                     lon = lon
                 )
-
-                val cityName = getCityName(lat, lon)
-                val fact = response.fact
-                val today = response.forecasts[0].parts.day
-                val tomorrow = response.forecasts[1].parts.day
-
-                cityStorage.addCityAndSetCurrent(SavedCity(cityName, lat, lon, isCurrent = true))
-
-                val todayMinMax = "${today.tempMax}° / ${today.tempMin}°"
-                val tomorrowMinMax = "${tomorrow.tempMax}° / ${tomorrow.tempMin}°"
-
-                val newState = _uiState.value?.copy(
-                    cityName = cityName,
-                    currentTemp = "${fact.temp}°",
-                    weatherDesc = fact.condition,
-                    todayMinMax = todayMinMax,
-                    yesterdayTemp = todayMinMax,
-                    tomorrowTemp = tomorrowMinMax,
-                    humidity = "${fact.humidity}%",
-                    pressure = "${fact.pressureMm} мм рт. ст.",
-                    aqi = "—",
-                    iconCode = fact.icon,
-                    isLoading = false,
-                    errorMessage = null
-                )
-                Log.d("WeatherVM", "UI updated with city: $cityName, temp: ${fact.temp}")
                 _uiState.value = newState
+                Log.d("WeatherVM", "Updated state: $newState")
+
+                // Данные для графика с числовыми значениями
+                val graphData = dailyList.take(5).mapIndexed { index, day ->
+                    val date = Date(day.EpochDate * 1000)
+                    val dayName = when (index) {
+                        0 -> "Сегодня"
+                        1 -> "Завтра"
+                        else -> SimpleDateFormat("E", Locale("ru")).format(date)
+                    }
+                    val maxVal = day.Temperature.Maximum.Value.toInt()
+                    val minVal = day.Temperature.Minimum.Value.toInt()
+                    ForecastGraphItem(
+                        dayName = dayName,
+                        maxDayTemp = "${maxVal}°",
+                        minNightTemp = "${minVal}°",
+                        maxTempValue = maxVal,
+                        minTempValue = minVal
+                    )
+                }
+                _graphItems.postValue(graphData)
+
             } catch (e: IOException) {
                 Log.e("WeatherVM", "Network error", e)
                 _uiState.value = _uiState.value?.copy(isLoading = false, errorMessage = "Ошибка сети")
@@ -73,6 +120,17 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
                 _uiState.value = _uiState.value?.copy(isLoading = false, errorMessage = "Ошибка: ${e.message}")
             }
         }
+    }
+
+    private fun getEmojiForIcon(code: Int): String = when (code) {
+        1, 2, 33, 34 -> "☀️"
+        3, 4, 35, 36 -> "🌤️"
+        5, 6, 7, 38 -> "⛅"
+        8, 9, 10, 11, 12 -> "🌧️"
+        13, 14, 15, 16, 17 -> "🌦️"
+        18, 19, 20, 21, 22 -> "🌩️"
+        23, 24, 25, 26, 27 -> "❄️"
+        else -> "❓"
     }
 
     private suspend fun getCityName(lat: Double, lon: Double): String {
@@ -87,37 +145,24 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun refreshCities(): List<SavedCity> {
-        val cities = cityStorage.getCities()
-        Log.d("WeatherVM", "refreshCities: ${cities.map { it.name }}")
-        return cities
+    // Управление списком городов
+    fun refreshCities(): List<SavedCity> = cityStorage.getCities()
+
+    fun deleteCity(position: Int) {
+        cityStorage.removeCity(position)
+    }
+
+    fun addCityAndLoad(city: SavedCity) {
+        cityStorage.addCityAndSetCurrent(city)
+        loadWeatherData(city.lat, city.lon)
     }
 
     fun selectCity(position: Int) {
         val cities = cityStorage.getCities()
-        Log.d("WeatherVM", "selectCity position=$position, cities size=${cities.size}")
         if (position in cities.indices) {
             cityStorage.setCurrentCity(position)
             val city = cities[position]
-            Log.d("WeatherVM", "Selected city: ${city.name} (${city.lat}, ${city.lon})")
             loadWeatherData(city.lat, city.lon)
         }
-    }
-
-    fun deleteCity(position: Int) {
-        cityStorage.removeCity(position)
-        val cities = cityStorage.getCities()
-        if (cities.isNotEmpty()) {
-            val current = cityStorage.getCurrentCity() ?: cities[0]
-            loadWeatherData(current.lat, current.lon)
-        } else {
-            loadWeatherData(defaultLat, defaultLon)
-        }
-    }
-
-    fun addCityAndLoad(city: SavedCity) {
-        Log.d("WeatherVM", "addCityAndLoad: ${city.name}")
-        cityStorage.addCityAndSetCurrent(city)
-        loadWeatherData(city.lat, city.lon)
     }
 }

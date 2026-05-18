@@ -3,7 +3,6 @@ package com.parshikov.weatherapp.ui
 import android.content.Intent
 import android.location.Geocoder
 import android.os.Bundle
-import android.util.Log
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.Toast
@@ -24,7 +23,7 @@ import java.util.Locale
 class SavedCitiesActivity : AppCompatActivity() {
     private lateinit var citiesRecyclerView: RecyclerView
     private lateinit var searchInput: EditText
-    private val viewModel: WeatherViewModel by viewModels()
+    private val viewModel: WeatherViewModel by viewModels()   // нам нужен только для refreshCities и deleteCity
     private lateinit var adapter: CityAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,11 +54,11 @@ class SavedCitiesActivity : AppCompatActivity() {
                 val cities = viewModel.refreshCities()
                 if (position in cities.indices) {
                     val city = cities[position]
-                    val intent = Intent().apply {
+                    val resultIntent = Intent().apply {
                         putExtra("lat", city.lat)
                         putExtra("lon", city.lon)
                     }
-                    setResult(RESULT_OK, intent)
+                    setResult(RESULT_OK, resultIntent)
                     finish()
                 }
             },
@@ -88,13 +87,17 @@ class SavedCitiesActivity : AppCompatActivity() {
             try {
                 val city = searchCity(query)
                 if (city != null) {
-                    viewModel.addCityAndLoad(city)
-                    finish() // Закрываем экран, возвращаемся к погоде нового города
+                    val resultIntent = Intent().apply {
+                        putExtra("lat", city.lat)
+                        putExtra("lon", city.lon)
+                    }
+                    setResult(RESULT_OK, resultIntent)
+                    finish()
                 } else {
                     Toast.makeText(this@SavedCitiesActivity, "Город не найден", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: IOException) {
-                Toast.makeText(this@SavedCitiesActivity, "Ошибка сети. Проверьте подключение к интернету", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@SavedCitiesActivity, "Ошибка сети", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 Toast.makeText(this@SavedCitiesActivity, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
             }
