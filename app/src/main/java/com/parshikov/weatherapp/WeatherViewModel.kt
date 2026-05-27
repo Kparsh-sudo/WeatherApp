@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -25,15 +26,21 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
     private val _graphItems = MutableLiveData<List<ForecastGraphItem>>()
     val graphItems: LiveData<List<ForecastGraphItem>> = _graphItems
 
-    private val apiKey = "КЛЮЧ АПИ"
+    private val apiKey = "daa"
     private val apiService = WeatherApiClient.apiService
 
     private val defaultLat = 51.3737
     private val defaultLon = 42.0889
 
     private val cityStorage = CityStorage(application)
+    private val appPreferences = AppPreferences(application)
 
-    fun loadWeatherData(lat: Double = defaultLat, lon: Double = defaultLon) {
+    fun loadWeatherData(lat: Double = defaultLat, lon: Double = defaultLon, force: Boolean = false) {
+        if (!force && appPreferences.nightModeEnabled && isNightTime()) {
+            Log.d("WeatherVM", "Обновление пропущено (ночной режим)")
+            return
+        }
+
         viewModelScope.launch {
             _uiState.value = _uiState.value?.copy(isLoading = true, errorMessage = null)
             try {
@@ -59,15 +66,35 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
                 val humidityAvg = today?.Day?.relativeHumidity?.Average
                 val humidityStr = if (humidityAvg != null) "$humidityAvg%" else "--%"
 
-                val windObj = today?.Day?.wind
-                val windStr = if (windObj != null && windObj.speed.value > 0) {
-                    "${windObj.speed.value.toInt()} км/ч, ${windObj.direction.localized}"
-                } else "-- км/ч"
+                // Ветер
+                val windSpeedKph = today?.Day?.wind?.speed?.value ?: 0.0
+                val windSpeedConverted = when (appPreferences.windUnit) {
+                    "ms" -> windSpeedKph / 3.6
+                    "mph" -> windSpeedKph / 1.609
+                    else -> windSpeedKph
+                }
+                val windUnitLabel = when (appPreferences.windUnit) {
+                    "ms" -> "м/с"
+                    "mph" -> "миль/ч"
+                    else -> "км/ч"
+                }
+                val windStr = if (windSpeedConverted > 0) {
+                    "${windSpeedConverted.toInt()} $windUnitLabel, ${today?.Day?.wind?.direction?.localized ?: ""}"
+                } else "--"
 
                 val uvItem = today?.airAndPollen?.find { it.name == "UVIndex" }
                 val uvStr = if (uvItem != null && uvItem.value > 0) {
                     "${uvItem.value.toInt()}, ${uvItem.category}"
                 } else "--"
+
+                // Конвертация температуры
+                val isFahrenheit = appPreferences.temperatureUnit == "fahrenheit"
+                val currentTemp = (todayMax + todayMin) / 2
+                val currentTempStr = if (isFahrenheit) "${celsiusToFahrenheit(currentTemp)}°F" else "${currentTemp}°C"
+                val todayMaxStr = if (isFahrenheit) "${celsiusToFahrenheit(todayMax)}°F" else "${todayMax}°C"
+                val todayMinStr = if (isFahrenheit) "${celsiusToFahrenheit(todayMin)}°F" else "${todayMin}°C"
+                val tomorrowMaxStr = if (isFahrenheit) "${celsiusToFahrenheit(tomorrowMax)}°F" else "${tomorrowMax}°C"
+                val tomorrowMinStr = if (isFahrenheit) "${celsiusToFahrenheit(tomorrowMin)}°F" else "${tomorrowMin}°C"
 
                 val emoji = getEmojiForIcon(iconCode)
 
@@ -76,11 +103,11 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
 
                 val newState = WeatherUiState(
                     cityName = cityName,
-                    currentTemp = "${(todayMax + todayMin) / 2}°",
+                    currentTemp = currentTempStr,
                     weatherDesc = weatherDesc,
-                    todayMinMax = "${todayMax}° / ${todayMin}°",
+                    todayMinMax = "$todayMaxStr / $todayMinStr",
                     yesterdayTemp = "--° / --°",
-                    tomorrowTemp = "${tomorrowMax}° / ${tomorrowMin}°",
+                    tomorrowTemp = "$tomorrowMaxStr / $tomorrowMinStr",
                     humidity = humidityStr,
                     wind = windStr,
                     uvIndex = uvStr,
@@ -92,7 +119,7 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
                 _uiState.value = newState
                 Log.d("WeatherVM", "Updated state: $newState")
 
-                // Данные для графика с числовыми значениями
+                // Данные для графика (с учётом единиц температуры)
                 val graphData = dailyList.take(5).mapIndexed { index, day ->
                     val date = Date(day.EpochDate * 1000)
                     val dayName = when (index) {
@@ -102,12 +129,14 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
                     }
                     val maxVal = day.Temperature.Maximum.Value.toInt()
                     val minVal = day.Temperature.Minimum.Value.toInt()
+                    val maxDisplay = if (isFahrenheit) celsiusToFahrenheit(maxVal) else maxVal
+                    val minDisplay = if (isFahrenheit) celsiusToFahrenheit(minVal) else minVal
                     ForecastGraphItem(
                         dayName = dayName,
-                        maxDayTemp = "${maxVal}°",
-                        minNightTemp = "${minVal}°",
-                        maxTempValue = maxVal,
-                        minTempValue = minVal
+                        maxDayTemp = "${maxDisplay}°",
+                        minNightTemp = "${minDisplay}°",
+                        maxTempValue = maxDisplay,
+                        minTempValue = minDisplay
                     )
                 }
                 _graphItems.postValue(graphData)
@@ -120,6 +149,14 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
                 _uiState.value = _uiState.value?.copy(isLoading = false, errorMessage = "Ошибка: ${e.message}")
             }
         }
+    }
+
+    private fun celsiusToFahrenheit(celsius: Int): Int = (celsius * 9 / 5) + 32
+
+    private fun isNightTime(): Boolean {
+        val calendar = Calendar.getInstance()
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        return hour >= 23 || hour < 7
     }
 
     private fun getEmojiForIcon(code: Int): String = when (code) {
@@ -145,7 +182,6 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    // Управление списком городов
     fun refreshCities(): List<SavedCity> = cityStorage.getCities()
 
     fun deleteCity(position: Int) {
