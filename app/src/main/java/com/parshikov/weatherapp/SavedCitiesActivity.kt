@@ -8,6 +8,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -23,12 +24,16 @@ import java.util.Locale
 class SavedCitiesActivity : AppCompatActivity() {
     private lateinit var citiesRecyclerView: RecyclerView
     private lateinit var searchInput: EditText
-    private val viewModel: WeatherViewModel by viewModels()   // нам нужен только для refreshCities и deleteCity
+    private val viewModel: WeatherViewModel by viewModels()
     private lateinit var adapter: CityAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_saved_cities)
+
+        // Toolbar с кнопкой "Назад"
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        toolbar.setNavigationOnClickListener { finish() }
 
         citiesRecyclerView = findViewById(R.id.citiesRecyclerView)
         searchInput = findViewById(R.id.citySearchInput)

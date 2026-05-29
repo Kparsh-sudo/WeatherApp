@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
-    app:cardBackgroundColor="#90CAF9"
+    app:cardBackgroundColor="?attr/colorSurface"
     app:cardCornerRadius="16dp"
     app:cardElevation="0dp">
 
@@ -22,15 +22,17 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Москва"
-            android:textColor="#1F1F1F"
+            android:textColor="?attr/colorOnSurface"
             android:textSize="18sp"
             android:textStyle="bold" />
 
-        <ImageView
+        <!-- Явно указываем ImageView, чтобы избежать автоматического MaterialTextView -->
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/deleteButton"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@drawable/weather_app_logo"
+            android:src="@drawable/ic_delete"
+            app:tint="?attr/colorError"
             android:padding="6dp"
             android:background="?attr/selectableItemBackgroundBorderless" />
     </LinearLayout>

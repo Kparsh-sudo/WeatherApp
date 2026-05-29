@@ -4,8 +4,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center_horizontal"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp"
+    android:paddingTop="24dp"
+    android:paddingBottom="24dp"
     android:background="?attr/colorSurface">
 
     <TextView
@@ -25,7 +25,6 @@
         android:textStyle="bold"
         android:textColor="@android:color/holo_orange_dark" />
 
-    <!-- Гибкое пространство для движения точек -->
     <FrameLayout
         android:id="@+id/dotsContainer"
         android:layout_width="match_parent"

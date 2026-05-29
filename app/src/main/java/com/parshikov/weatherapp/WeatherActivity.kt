@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -27,9 +28,10 @@ class WeatherActivity : AppCompatActivity() {
 
         Log.d("WeatherActivity", "onCreate: lat=$lat, lon=$lon, city=$cityName")
 
-        // Заголовок
-        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        // Заголовок и кнопка назад
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
         toolbar.title = cityName
+        toolbar.setNavigationOnClickListener { finish() }
 
         // Настройка RecyclerView
         val recyclerView = findViewById<RecyclerView>(R.id.forecastGraphRecycler)
@@ -55,8 +57,6 @@ class WeatherActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // При возвращении на экран обновляем данные, если координаты не изменились
-        Log.d("WeatherActivity", "onResume: requesting weather again")
         requestWeatherData()
     }
 

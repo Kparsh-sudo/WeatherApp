@@ -4,31 +4,31 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="?android:attr/windowBackground">  <!-- или ?attr/colorSurface -->
+    android:fitsSystemWindows="true"
+    android:background="@color/blue_50"
+    android:paddingTop="24dp">
 
-    <!-- Шапка -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorSurface"
-        app:title="Москва"
-        app:titleTextColor="?attr/colorOnSurface" />
+        app:title="Прогноз"
+        app:titleTextColor="?attr/colorOnSurface"
+        app:navigationIcon="@drawable/ic_arrow_back" />
 
-    <!-- RecyclerView для графика -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/forecastGraphRecycler"
         android:layout_width="match_parent"
-        android:layout_height="350dp"
+        android:layout_height="300dp"
+        android:scrollbars="horizontal"
         android:clipChildren="false"
         android:clipToPadding="false"
-        android:scrollbars="horizontal"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         android:orientation="horizontal" />
 
-    <!-- Остальной контент -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

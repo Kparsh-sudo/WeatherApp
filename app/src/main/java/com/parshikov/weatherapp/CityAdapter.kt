@@ -1,6 +1,5 @@
 package com.parshikov.weatherapp.ui
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -36,28 +35,21 @@ class CityAdapter(
 
     inner class CityViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val cityNameText: TextView = itemView.findViewById(R.id.cityNameText)
+        // Здесь ожидаем ImageView (или AppCompatImageView) – findViewById вернёт ImageView
         private val deleteButton: ImageView = itemView.findViewById(R.id.deleteButton)
         private val cardView: CardView = itemView as CardView
 
         fun bind(city: SavedCity, position: Int) {
             cityNameText.text = city.name
 
-            // Подсветка текущего города
             if (city.isCurrent) {
                 cardView.setCardBackgroundColor(0xFFBBDEFB.toInt())
             } else {
                 cardView.setCardBackgroundColor(0xFF90CAF9.toInt())
             }
 
-            cardView.setOnClickListener {
-                Log.d("CityAdapter", "Item clicked at position $position, city: ${city.name}")
-                onItemClick(position)
-            }
-
-            deleteButton.setOnClickListener {
-                Log.d("CityAdapter", "Delete clicked at position $position, city: ${city.name}")
-                onDeleteClick(position)
-            }
+            cardView.setOnClickListener { onItemClick(position) }
+            deleteButton.setOnClickListener { onDeleteClick(position) }
         }
     }
 }

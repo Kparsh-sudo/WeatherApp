@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    android:background="@color/blue_50"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="24dp"
+    android:paddingBottom="16dp">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:title="Настройки"
+        app:titleTextColor="?attr/colorOnSurface"
+        app:navigationIcon="@drawable/ic_arrow_back" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Единицы измерения температуры"
+        android:textColor="?attr/colorOnBackground"
+        android:textSize="16sp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="8dp" />
+
+    <RadioGroup
+        android:id="@+id/temperatureRadioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/radioCelsius"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Цельсий (°C)"
+            android:textColor="?attr/colorOnBackground" />
+
+        <RadioButton
+            android:id="@+id/radioFahrenheit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Фаренгейт (°F)"
+            android:textColor="?attr/colorOnBackground" />
+    </RadioGroup>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#cccccc"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Единицы измерения скорости ветра"
+        android:textColor="?attr/colorOnBackground"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
+
+    <Spinner
+        android:id="@+id/windUnitSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#cccccc"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Отключить обновление ночью (23:00 – 07:00)"
+            android:textColor="?attr/colorOnBackground"
+            android:textSize="16sp" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/nightModeSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+</LinearLayout>
