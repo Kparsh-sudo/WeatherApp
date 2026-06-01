@@ -26,7 +26,7 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
     private val _graphItems = MutableLiveData<List<ForecastGraphItem>>()
     val graphItems: LiveData<List<ForecastGraphItem>> = _graphItems
 
-    private val apiKey = "daa"
+    private val apiKey = "da"
     private val apiService = WeatherApiClient.apiService
 
     private val defaultLat = 51.3737
